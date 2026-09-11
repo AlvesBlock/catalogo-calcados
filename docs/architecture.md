@@ -41,6 +41,8 @@ Fluxo de dados:
         ↓
     CSV publicado
         ↓
+    Netlify Function / CDN cache
+        ↓
     GoogleSheetsCatalogRepository
         ↓
     Product / CatalogConfig
@@ -51,6 +53,16 @@ Cada instância mantém uma promise de produtos e outra de configuração. Assim
 simultâneas ou repetidas não duplicam downloads, e getProductBySlug reutiliza os produtos. Uma
 promise rejeitada é removida do cache para que o botão Tentar novamente faça uma nova requisição.
 Não há localStorage, Service Worker ou cache persistente para as planilhas.
+
+O navegador usa apenas os endpoints same-origin
+/.netlify/functions/catalog-csv?sheet=products e
+/.netlify/functions/catalog-csv?sheet=config. A Function mapeia esses dois valores para variáveis
+de runtime server-side e segue redirects do Google. Ela existe exclusivamente para evitar CORS,
+manter o frontend same-origin e aplicar cache; não contém regras de negócio.
+
+O parâmetro sheet possui lista fechada, portanto a Function não pode ser usada como proxy para
+URLs arbitrárias. Respostas válidas usam cache de navegador de 60 segundos e cache durável da
+CDN por 300 segundos, com stale-while-revalidate de 600 segundos.
 
 ## 8. Validação e normalização
 
@@ -105,12 +117,19 @@ Os registros permanecem em memória. Filtro e ordenação são derivados com `us
 
 ## 15. Deploy no Netlify
 
-`netlify.toml` define `npm run build`, publicação de `dist` e fallback SPA. `public/_redirects` mantém acesso direto às rotas do React Router. O deploy será feito em uma etapa posterior.
+`netlify.toml` define `npm run build`, publicação de `dist` e fallback SPA.
+`public/_redirects` mantém acesso direto às rotas do React Router. A Netlify resolve Functions
+antes dos redirects, por isso o endpoint reservado não é capturado pelo fallback e nenhuma regra
+adicional é necessária.
+
+CATALOG_PRODUCTS_CSV_URL e CATALOG_CONFIG_CSV_URL são variáveis runtime com escopo Functions e
+não possuem prefixo VITE_. O frontend recebe somente os caminhos same-origin. Para testar todo o
+fluxo localmente usa-se netlify dev; npm run dev continua suficiente para a origem mock.
 
 ## Responsabilidades externas
 
 - Google Sheets = CMS simples / fonte de dados
 - Cloudinary = mídia
-- Netlify = hosting
+- Netlify = hosting, transporte CSV e cache CDN
 - WhatsApp = contato
 - GitHub = versionamento
