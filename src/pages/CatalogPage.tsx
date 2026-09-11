@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ProductGrid } from '../components/ProductGrid'
+import { CatalogLoadError } from '../components/CatalogLoadError'
 import { useCatalogData } from '../hooks/useCatalogData'
 import {
   emptyFilters,
@@ -15,7 +16,7 @@ const unique = (values: string[]) =>
 
 export function CatalogPage() {
   const [params] = useSearchParams()
-  const { products, config, loading, error } = useCatalogData()
+  const { products, config, loading, error, retry } = useCatalogData()
   const [filters, setFilters] = useState<CatalogFilters>(() => ({
     ...emptyFilters,
     search: params.get('q') ?? '',
@@ -49,7 +50,7 @@ export function CatalogPage() {
   const current = result.slice((page - 1) * pageSize, page * pageSize)
   useEffect(() => setPage(1), [filters, sort])
   if (loading) return <p className="status container">Carregando catálogo…</p>
-  if (error || !config) return <p className="status container">{error}</p>
+  if (error || !config) return <CatalogLoadError onRetry={retry} />
   const set = (key: keyof CatalogFilters, value: string) =>
     setFilters((currentFilters) => ({ ...currentFilters, [key]: value }))
   return (

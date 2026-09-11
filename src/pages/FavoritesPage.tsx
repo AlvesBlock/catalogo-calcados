@@ -1,4 +1,5 @@
 import { ProductGrid } from '../components/ProductGrid'
+import { CatalogLoadError } from '../components/CatalogLoadError'
 import { useCatalogData } from '../hooks/useCatalogData'
 import { useFavorites } from '../hooks/FavoritesContext'
 import {
@@ -8,10 +9,10 @@ import {
 } from '../services/whatsapp'
 
 export function FavoritesPage() {
-  const { products, config, loading, error } = useCatalogData()
+  const { products, config, loading, error, retry } = useCatalogData()
   const { favoriteSkus } = useFavorites()
   if (loading) return <p className="status container">Carregando favoritos…</p>
-  if (error || !config) return <p className="status container">{error}</p>
+  if (error || !config) return <CatalogLoadError onRetry={retry} />
   const favorites = products.filter((product) => favoriteSkus.includes(product.sku))
   return (
     <div className="container page">

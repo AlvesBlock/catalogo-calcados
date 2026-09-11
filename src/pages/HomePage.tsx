@@ -1,12 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useCatalogData } from '../hooks/useCatalogData'
 import { ProductGrid } from '../components/ProductGrid'
+import { CatalogLoadError } from '../components/CatalogLoadError'
 
 export function HomePage() {
   const navigate = useNavigate()
-  const { products, config, loading, error } = useCatalogData()
+  const { products, config, loading, error, retry } = useCatalogData()
   if (loading) return <p className="status container">Carregando catálogo…</p>
-  if (error || !config) return <p className="status container">{error}</p>
+  if (error || !config) return <CatalogLoadError onRetry={retry} />
   const visible = products.filter((product) => config.showUnavailable || product.available)
   return (
     <>

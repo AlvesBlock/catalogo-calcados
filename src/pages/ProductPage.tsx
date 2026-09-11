@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { PriceDisplay } from '../components/PriceDisplay'
+import { CatalogLoadError } from '../components/CatalogLoadError'
 import { useCatalogData } from '../hooks/useCatalogData'
 import { useFavorites } from '../hooks/FavoritesContext'
 import { buildCloudinaryUrl } from '../services/cloudinary'
@@ -7,10 +8,10 @@ import { buildProductInterestMessage, buildWhatsAppUrl } from '../services/whats
 
 export function ProductPage() {
   const { slug } = useParams()
-  const { products, config, loading, error } = useCatalogData()
+  const { products, config, loading, error, retry } = useCatalogData()
   const { isFavorite, toggleFavorite } = useFavorites()
   if (loading) return <p className="status container">Carregando produto…</p>
-  if (error || !config) return <p className="status container">{error}</p>
+  if (error || !config) return <CatalogLoadError onRetry={retry} />
   const product = products.find((item) => item.slug === slug)
   if (!product)
     return (

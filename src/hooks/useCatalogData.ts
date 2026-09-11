@@ -8,22 +8,29 @@ interface CatalogData {
   config: CatalogConfig | null
   loading: boolean
   error: string | null
+  retry: () => void
 }
 
 export function useCatalogData(): CatalogData {
+  const [attempt, setAttempt] = useState(0)
   const [state, setState] = useState<CatalogData>({
     products: [],
     config: null,
     loading: true,
     error: null,
+    retry: () => setAttempt((value) => value + 1),
   })
   useEffect(() => {
     let active = true
+    setState((current) => ({ ...current, products: [], config: null, loading: true, error: null }))
     Promise.all([catalogRepository.getProducts(), catalogRepository.getConfig()])
       .then(([products, config]) => {
-        if (active) setState({ products, config, loading: false, error: null })
+        if (active) {
+          setState((current) => ({ ...current, products, config, loading: false, error: null }))
+        }
       })
-      .catch(() => {
+      .catch((loadError: unknown) => {
+        if (import.meta.env.DEV) console.error('Falha ao carregar o catálogo:', loadError)
         if (active)
           setState((current) => ({
             ...current,
@@ -34,6 +41,6 @@ export function useCatalogData(): CatalogData {
     return () => {
       active = false
     }
-  }, [])
+  }, [attempt])
   return state
 }
