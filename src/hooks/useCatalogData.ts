@@ -30,7 +30,9 @@ export function useCatalogData(): CatalogData {
         }
       })
       .catch((loadError: unknown) => {
-        console.error('Falha ao carregar o catálogo:', loadError)
+        if (import.meta.env.DEV) {
+          console.error('Falha ao carregar o catálogo:', loadError)
+        }
         if (active)
           setState((current) => ({
             ...current,

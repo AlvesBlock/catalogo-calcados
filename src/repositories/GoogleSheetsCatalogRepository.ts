@@ -3,7 +3,13 @@ import type { CatalogRepository } from '../domain/CatalogRepository'
 import type { Product } from '../domain/Product'
 import { parseConfigCsv, parseProductsCsv } from './csvParsing'
 
-export type CatalogFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+export type CatalogFetch = (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+) => Promise<Response>
+
+const defaultCatalogFetch: CatalogFetch = (input, init) =>
+  fetch(input, init)
 
 export class GoogleSheetsCatalogRepository implements CatalogRepository {
   private productsPromise?: Promise<Product[]>
@@ -12,7 +18,7 @@ export class GoogleSheetsCatalogRepository implements CatalogRepository {
   constructor(
     private readonly productsCsvUrl: string,
     private readonly configCsvUrl: string,
-    private readonly fetcher: CatalogFetch = fetch,
+    private readonly fetcher: CatalogFetch = defaultCatalogFetch,
   ) {}
 
   getProducts(): Promise<Product[]> {
