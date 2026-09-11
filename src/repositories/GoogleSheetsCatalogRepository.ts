@@ -8,6 +8,7 @@ export type CatalogFetch = (
   init?: RequestInit,
 ) => Promise<Response>
 
+// O wrapper evita chamar window.fetch com a instância do repository como receiver.
 const defaultCatalogFetch: CatalogFetch = (input, init) =>
   fetch(input, init)
 

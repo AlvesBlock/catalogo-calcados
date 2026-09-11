@@ -126,6 +126,20 @@ CATALOG_PRODUCTS_CSV_URL e CATALOG_CONFIG_CSV_URL são variáveis runtime com es
 não possuem prefixo VITE_. O frontend recebe somente os caminhos same-origin. Para testar todo o
 fluxo localmente usa-se netlify dev; npm run dev continua suficiente para a origem mock.
 
+## Regression guards / invariantes de produção
+
+- O fetch nativo do navegador não é armazenado diretamente como propriedade da instância. Um
+  wrapper o chama como função para evitar Illegal invocation causada por receiver incorreto. A
+  injeção de CatalogFetch permanece disponível e um teste cobre a chamada padrão.
+- Testes da Netlify Function ficam em tests/netlify. Nenhum arquivo test deve permanecer em
+  netlify/functions, pois todo arquivo nessa pasta pode ser considerado deployável.
+- O browser acessa apenas os endpoints same-origin da Function; somente a Function acessa as
+  URLs publicadas do Google Sheets.
+- Variáveis VITE_ pertencem ao frontend/build. CATALOG_PRODUCTS_CSV_URL e
+  CATALOG_CONFIG_CSV_URL pertencem exclusivamente ao runtime server-side.
+- Quando a origem google falha, a UI apresenta erro e nova tentativa. Não existe fallback
+  automático para MockCatalogRepository.
+
 ## Responsabilidades externas
 
 - Google Sheets = CMS simples / fonte de dados

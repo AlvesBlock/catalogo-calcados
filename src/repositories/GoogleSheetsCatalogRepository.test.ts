@@ -43,4 +43,19 @@ describe('GoogleSheetsCatalogRepository', () => {
     const repository = new GoogleSheetsCatalogRepository('', '', vi.fn())
     await expect(repository.getProducts()).rejects.toThrow('VITE_PRODUCTS_CSV_URL')
   })
+
+  it('calls the native fetch without binding the repository as its receiver', async () => {
+    const nativeFetch = vi.fn(function (this: unknown) {
+      expect(this).toBeUndefined()
+      return Promise.resolve(response(productsCsv))
+    })
+    vi.stubGlobal('fetch', nativeFetch)
+
+    try {
+      const repository = new GoogleSheetsCatalogRepository('products', 'config')
+      await expect(repository.getProducts()).resolves.toHaveLength(1)
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
 })
