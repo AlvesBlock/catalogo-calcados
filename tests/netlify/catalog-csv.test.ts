@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createCatalogCsvHandler } from './catalog-csv'
+import { createCatalogCsvHandler } from '../../netlify/functions/catalog-csv'
 
 const productsUrl = 'https://example.test/products.csv'
 const configUrl = 'https://example.test/config.csv'
